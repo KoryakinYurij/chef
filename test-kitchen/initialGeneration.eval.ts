@@ -81,6 +81,12 @@ if (process.env.GOOGLE_GENERATIVE_AI_API_KEY) {
     ai: google('gemini-2.5-pro'),
     maxTokens: 20000,
   });
+  chefEval({
+    name: 'gemini-2.5-flash',
+    model_slug: 'gemini-2.5-flash',
+    ai: google('gemini-2.5-flash'),
+    maxTokens: 20000,
+  });
 }
 
 if (process.env.XAI_API_KEY) {

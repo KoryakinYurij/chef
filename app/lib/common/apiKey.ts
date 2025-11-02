@@ -27,6 +27,7 @@ export function hasApiKeySet(
     case 'grok-3-mini':
       return !!apiKey.xai?.trim();
     case 'gemini-2.5-pro':
+    case 'gemini-2.5-flash':
       return !!apiKey.google?.trim();
     default: {
       const _exhaustiveCheck: never = modelSelection;

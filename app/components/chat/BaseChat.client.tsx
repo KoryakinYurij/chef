@@ -28,6 +28,8 @@ import { SubchatLimitNudge } from './SubchatLimitNudge';
 import { useMutation } from 'convex/react';
 import { api } from '@convex/_generated/api';
 import { subchatIndexStore, useIsSubchatLoaded } from '~/lib/stores/subchats';
+import { TokenCounter } from './TokenCounter';
+import { ContextCompressor } from './ContextCompressor';
 
 interface BaseChatProps {
   // Refs
@@ -49,6 +51,7 @@ interface BaseChatProps {
   currentError: Error | undefined;
   toolStatus: ToolStatus;
   messages: Message[];
+  setMessages?: (messages: Message[]) => void; // Добавляем опциональную функцию установки сообщений
   terminalInitializationOptions: TerminalInitializationOptions | undefined;
   disableChatMessage: ReactNode | string | null;
 
@@ -82,6 +85,7 @@ export const BaseChat = React.forwardRef<HTMLDivElement, BaseChatProps>(
       onStop,
       sendMessageInProgress,
       messages,
+      setMessages,
       actionAlert,
       clearAlert,
       toolStatus,
@@ -255,6 +259,24 @@ export const BaseChat = React.forwardRef<HTMLDivElement, BaseChatProps>(
                           currentError={currentError}
                           resendMessage={resendMessage}
                           modelSelection={modelSelection}
+                        />
+                      )}
+
+                      {/* Context Compressor with Token Counter */}
+                      {!disableChatMessage && !shouldShowNudge && setMessages && (
+                        <ContextCompressor
+                          messages={messages}
+                          setMessages={setMessages}
+                          maxCollapsedMessagesSize={16384}
+                          minCollapsedMessagesSize={8192}
+                        />
+                      )}
+                      {/* Token Counter (fallback if setMessages not available) */}
+                      {!disableChatMessage && !shouldShowNudge && !setMessages && (
+                        <TokenCounter
+                          messages={messages}
+                          maxCollapsedMessagesSize={16384}
+                          minCollapsedMessagesSize={8192}
                         />
                       )}
 

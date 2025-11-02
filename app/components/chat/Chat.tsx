@@ -204,6 +204,7 @@ export const Chat = memo(
           'gpt-5': { providerName: 'openai', apiKeyField: 'openai' },
           'grok-3-mini': { providerName: 'xai', apiKeyField: 'xai' },
           'gemini-2.5-pro': { providerName: 'google', apiKeyField: 'google' },
+          'gemini-2.5-flash': { providerName: 'google', apiKeyField: 'google' },
           'claude-3-5-haiku': { providerName: 'anthropic', apiKeyField: 'value' },
           'gpt-4.1-mini': { providerName: 'openai', apiKeyField: 'openai' },
         };
@@ -314,6 +315,9 @@ export const Chat = memo(
           modelProvider = 'XAI';
         } else if (modelSelection === 'gemini-2.5-pro') {
           modelProvider = 'Google';
+        } else if (modelSelection === 'gemini-2.5-flash') {
+          modelProvider = 'Google';
+          modelChoice = 'gemini-2.5-flash';
         } else if (modelSelection === 'gpt-4.1-mini') {
           modelProvider = 'OpenAI';
           modelChoice = 'gpt-4.1-mini';
@@ -620,6 +624,7 @@ export const Chat = memo(
           currentError={error}
           toolStatus={toolStatus}
           messages={parsedMessages /* Note that parsedMessages are throttled. */}
+          setMessages={setMessages}
           actionAlert={actionAlert}
           clearAlert={() => workbenchStore.clearAlert()}
           terminalInitializationOptions={terminalInitializationOptions}
@@ -823,6 +828,7 @@ function maxSizeForModel(modelSelection: ModelSelection, maxSize: number) {
   switch (modelSelection) {
     case 'auto':
     case 'gemini-2.5-pro':
+    case 'gemini-2.5-flash':
       return maxSize;
     default:
       // For non-anthropic models not yet using caching, use a lower message size limit.

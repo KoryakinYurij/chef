@@ -93,6 +93,11 @@ export const models: Partial<
     recommended: false,
     provider: 'google',
   },
+  'gemini-2.5-flash': {
+    name: 'Gemini 2.5 Flash',
+    recommended: true,
+    provider: 'google',
+  },
   'gpt-4.1': {
     name: 'GPT-4.1',
     provider: 'openai',
