@@ -1,4 +1,3 @@
-import { useTeamsInitializer } from '~/lib/stores/startup/useTeamsInitializer';
 import { ChefAuthProvider } from '~/components/chat/ChefAuthWrapper';
 import { json } from '@vercel/remix';
 import type { LoaderFunctionArgs, MetaFunction } from '@vercel/remix';
@@ -22,7 +21,7 @@ export const loader = async (args: LoaderFunctionArgs) => {
 };
 
 export default function Settings() {
-  useTeamsInitializer();
+  // useTeamsInitializer(); // Temporarily disabled
 
   return (
     <ChefAuthProvider redirectIfUnauthenticated={true}>

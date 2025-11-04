@@ -386,10 +386,11 @@ function toolTitle(invocation: ConvexToolInvocation): React.ReactNode {
         renderedPath = 'a directory';
       }
       let extra = '';
-      if (args.success && args.data.view_range) {
+      if (args.success && args.data.view_range && Array.isArray(args.data.view_range)) {
         const [start, end] = args.data.view_range;
-        const endName = end === -1 ? 'end' : end.toString();
-        extra = ` (lines ${start} - ${endName})`;
+        const startName = start !== undefined ? start.toString() : '1';
+        const endName = end === -1 ? 'end' : (end !== undefined ? end.toString() : 'end');
+        extra = ` (lines ${startName} - ${endName})`;
       }
       if (args.success) {
         renderedPath = getRelativePath(args.data.path) || '/home/project';
@@ -755,3 +756,4 @@ function GetConvexDeploymentNameTool({ invocation }: { invocation: ConvexToolInv
     </div>
   );
 }
+

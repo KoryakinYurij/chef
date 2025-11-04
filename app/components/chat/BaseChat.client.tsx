@@ -28,8 +28,7 @@ import { SubchatLimitNudge } from './SubchatLimitNudge';
 import { useMutation } from 'convex/react';
 import { api } from '@convex/_generated/api';
 import { subchatIndexStore, useIsSubchatLoaded } from '~/lib/stores/subchats';
-import { TokenCounter } from './TokenCounter';
-import { ContextCompressor } from './ContextCompressor';
+import { ContextControls } from './ContextControls';
 
 interface BaseChatProps {
   // Refs
@@ -262,19 +261,11 @@ export const BaseChat = React.forwardRef<HTMLDivElement, BaseChatProps>(
                         />
                       )}
 
-                      {/* Context Compressor with Token Counter */}
-                      {!disableChatMessage && !shouldShowNudge && setMessages && (
-                        <ContextCompressor
+                      {/* Advanced Context Controls */}
+                      {!disableChatMessage && !shouldShowNudge && (
+                        <ContextControls
                           messages={messages}
                           setMessages={setMessages}
-                          maxCollapsedMessagesSize={16384}
-                          minCollapsedMessagesSize={8192}
-                        />
-                      )}
-                      {/* Token Counter (fallback if setMessages not available) */}
-                      {!disableChatMessage && !shouldShowNudge && !setMessages && (
-                        <TokenCounter
-                          messages={messages}
                           maxCollapsedMessagesSize={16384}
                           minCollapsedMessagesSize={8192}
                         />

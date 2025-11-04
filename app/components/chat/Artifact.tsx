@@ -1,6 +1,6 @@
 import { useStore } from '@nanostores/react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { computed } from 'nanostores';
+import { computed, map } from 'nanostores';
 import { memo, useEffect, useRef, useState } from 'react';
 import { createHighlighter, type BundledLanguage, type BundledTheme, type HighlighterGeneric } from 'shiki';
 import { FileIcon, CaretUpIcon, CaretDownIcon, CircleIcon, CheckIcon, Cross2Icon } from '@radix-ui/react-icons';
@@ -38,8 +38,12 @@ export const Artifact = memo(function Artifact({ partId }: ArtifactProps) {
   const artifacts = useStore(workbenchStore.artifacts);
   const artifact = artifacts[partId];
 
+  if (!artifact) {
+    return null;
+  }
+
   const actions = useStore(
-    computed(artifact.runner.actions, (actions) => {
+    computed(artifact.runner?.actions ?? map({}), (actions) => {
       return Object.values(actions);
     }),
   );

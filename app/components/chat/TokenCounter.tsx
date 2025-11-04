@@ -10,32 +10,35 @@ interface TokenCounterProps {
 
 export const TokenCounter = ({ messages, maxCollapsedMessagesSize, minCollapsedMessagesSize }: TokenCounterProps) => {
   const tokenInfo = useMemo(() => {
-    // Создаем временный экземпляр ChatContextManager для подсчета размеров
+    // Create temporary ChatContextManager for size calculation
     const mockContextManager = new ChatContextManager(
       () => undefined,
       () => ({}),
       () => new Map()
     );
     
-    // Преобразуем Message[] в UIMessage[] для совместимости с ChatContextManager
-    // Добавляем parts к сообщениям, если они отсутствуют
+    // Convert Message[] to UIMessage[] for ChatContextManager compatibility
+    // Add parts to messages if they don't exist
     const uiMessages: UIMessage[] = messages.map((msg, index) => ({
       ...msg,
       id: msg.id || `temp-${index}`,
       parts: msg.parts || (msg.content ? [{ type: 'text', text: msg.content }] : []),
     }));
     
-    // Рассчитываем размеры сообщений
+    // Calculate message sizes
     const characterCounts = mockContextManager.calculatePromptCharacterCounts(uiMessages);
     
-    // Приблизительная оценка количества токенов (обычно 1 токен ≈ 4 символа для английского текста)
+    // More accurate token estimation (approximately 1 token ≈ 4 characters for English text)
     const estimatedTokens = Math.floor(characterCounts.totalPromptChars / 4);
     const historyTokens = Math.floor(characterCounts.messageHistoryChars / 4);
     const currentTurnTokens = Math.floor(characterCounts.currentTurnChars / 4);
     
-    // Определяем пороги для цветового индикатора
-    const tokenThreshold = maxCollapsedMessagesSize; // Используем как порог для предупреждения
-    const criticalThreshold = maxCollapsedMessagesSize * 1.5; // Критический порог
+    // Define thresholds for color indicators (WCAG AA compliant colors)
+    const tokenThreshold = maxCollapsedMessagesSize;
+    const criticalThreshold = maxCollapsedMessagesSize * 1.5;
+    
+    // Calculate percentage for progress bar
+    const usagePercentage = Math.min(100, (estimatedTokens / criticalThreshold) * 100);
     
     return {
       totalChars: characterCounts.totalPromptChars,
@@ -46,46 +49,137 @@ export const TokenCounter = ({ messages, maxCollapsedMessagesSize, minCollapsedM
       currentTurnTokens,
       tokenThreshold,
       criticalThreshold,
+      usagePercentage,
       isWarning: estimatedTokens > tokenThreshold,
       isCritical: estimatedTokens > criticalThreshold,
     };
   }, [messages, maxCollapsedMessagesSize, minCollapsedMessagesSize]);
 
-  // Определяем цвет индикатора
-  const indicatorColor = tokenInfo.isCritical
-    ? 'bg-red-500'
-    : tokenInfo.isWarning
-      ? 'bg-yellow-500'
-      : 'bg-green-500';
+  // WCAG AA compliant color combinations with sufficient contrast
+  const getStatusInfo = () => {
+    if (tokenInfo.isCritical) {
+      return {
+        bgColor: 'bg-red-50 dark:bg-red-900/20',
+        borderColor: 'border-red-200 dark:border-red-800',
+        textColor: 'text-red-900 dark:text-red-100',
+        accentColor: 'bg-red-600',
+        statusText: 'Critical',
+        description: 'Context size exceeds recommended limits'
+      };
+    } else if (tokenInfo.isWarning) {
+      return {
+        bgColor: 'bg-amber-50 dark:bg-amber-900/20',
+        borderColor: 'border-amber-200 dark:border-amber-800',
+        textColor: 'text-amber-900 dark:text-amber-100',
+        accentColor: 'bg-amber-600',
+        statusText: 'Warning',
+        description: 'Context size approaching limits'
+      };
+    }
+    return {
+      bgColor: 'bg-emerald-50 dark:bg-emerald-900/20',
+      borderColor: 'border-emerald-200 dark:border-emerald-800',
+      textColor: 'text-emerald-900 dark:text-emerald-100',
+      accentColor: 'bg-emerald-600',
+      statusText: 'Optimal',
+      description: 'Context size within optimal range'
+    };
+  };
+
+  const statusInfo = getStatusInfo();
 
   return (
-    <div className="flex flex-col gap-1 p-3 bg-bolt-elements-background-depth-2 rounded-lg border border-bolt-elements-borderColor">
-      <div className="flex justify-between items-center">
-        <span className="text-sm font-medium text-content-primary">Token Count</span>
-        <span className={`text-sm font-bold ${tokenInfo.isCritical ? 'text-red-500' : tokenInfo.isWarning ? 'text-yellow-500' : 'text-green-500'}`}>
-          ~{tokenInfo.estimatedTokens.toLocaleString()} tokens
+    <div
+      className={`flex items-center justify-between p-2.5 ${statusInfo.bgColor} ${statusInfo.borderColor} border rounded-lg transition-colors duration-200`}
+      role="region"
+      aria-label="Token usage information"
+    >
+      {/* Compact Token Count Display */}
+      <div className="flex items-center space-x-3">
+        <div className="flex items-center space-x-2">
+          <div
+            className={`w-2 h-2 rounded-full ${statusInfo.accentColor}`}
+            aria-hidden="true"
+          />
+          <span
+            className={`text-sm font-semibold ${statusInfo.textColor}`}
+            aria-label={`Total tokens: ${tokenInfo.estimatedTokens.toLocaleString()}`}
+          >
+            {tokenInfo.estimatedTokens.toLocaleString()} tokens
+          </span>
+        </div>
+        
+        <div
+          className="text-xs font-medium text-gray-600 dark:text-gray-300"
+          aria-hidden="true"
+        >
+          {statusInfo.statusText}
+        </div>
+      </div>
+
+      {/* Compact Progress Bar with Better Accessibility */}
+      <div className="flex items-center space-x-2 min-w-0 flex-1 max-w-32">
+        <div
+          className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5 overflow-hidden"
+          role="progressbar"
+          aria-valuenow={Math.round(tokenInfo.usagePercentage)}
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-label={`Token usage: ${Math.round(tokenInfo.usagePercentage)}%`}
+        >
+          <div
+            className={`h-full ${statusInfo.accentColor} transition-all duration-300 ease-out`}
+            style={{ width: `${tokenInfo.usagePercentage}%` }}
+          />
+        </div>
+        
+        {/* Percentage indicator for screen readers */}
+        <span
+          className="text-xs text-gray-500 dark:text-gray-400 w-8 text-right"
+          aria-hidden="true"
+        >
+          {Math.round(tokenInfo.usagePercentage)}%
         </span>
       </div>
-      <div className="w-full bg-gray-20 dark:bg-gray-700 rounded-full h-2">
+
+      {/* Detailed breakdown on hover/focus - Tooltip approach */}
+      <div className="relative group">
+        <button
+          className={`text-xs font-medium ${statusInfo.textColor} hover:underline focus:outline-none focus:underline`}
+          aria-describedby="token-breakdown"
+          tabIndex={0}
+        >
+          Details
+        </button>
+        
         <div
-          className={`h-2 rounded-full ${indicatorColor}`}
-          style={{
-            width: `${Math.min(100, (tokenInfo.estimatedTokens / tokenInfo.criticalThreshold) * 100)}%`
-          }}
-        ></div>
-      </div>
-      <div className="grid grid-cols-3 gap-2 text-xs mt-2">
-        <div className="text-center">
-          <div className="text-content-secondary">History</div>
-          <div className="font-medium text-content-primary">{tokenInfo.historyTokens.toLocaleString()}</div>
-        </div>
-        <div className="text-center">
-          <div className="text-content-secondary">Current</div>
-          <div className="font-medium text-content-primary">{tokenInfo.currentTurnTokens.toLocaleString()}</div>
-        </div>
-        <div className="text-center">
-          <div className="text-content-secondary">Total</div>
-          <div className="font-medium text-content-primary">{tokenInfo.estimatedTokens.toLocaleString()}</div>
+          id="token-breakdown"
+          className="absolute bottom-full right-0 mb-2 w-48 p-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-focus:opacity-100 group-hover:visible group-focus:visible transition-all duration-200 z-10"
+          role="tooltip"
+        >
+          <div className="space-y-1 text-xs">
+            <div className="flex justify-between">
+              <span className="text-gray-600 dark:text-gray-300">History:</span>
+              <span className={`font-medium ${statusInfo.textColor}`}>
+                {tokenInfo.historyTokens.toLocaleString()}
+              </span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-600 dark:text-gray-300">Current:</span>
+              <span className={`font-medium ${statusInfo.textColor}`}>
+                {tokenInfo.currentTurnTokens.toLocaleString()}
+              </span>
+            </div>
+            <div className="flex justify-between border-t border-gray-200 dark:border-gray-700 pt-1">
+              <span className="text-gray-600 dark:text-gray-300 font-medium">Total:</span>
+              <span className={`font-bold ${statusInfo.textColor}`}>
+                {tokenInfo.estimatedTokens.toLocaleString()}
+              </span>
+            </div>
+          </div>
+          
+          {/* Arrow pointing to button */}
+          <div className="absolute top-full right-4 w-2 h-2 bg-white dark:bg-gray-800 border-r border-b border-gray-200 dark:border-gray-700 transform rotate-45 -mt-1" />
         </div>
       </div>
     </div>

@@ -1,4 +1,4 @@
-import { useTeamsInitializer } from '~/lib/stores/startup/useTeamsInitializer';
+// import { useTeamsInitializer } from '~/lib/stores/startup/useTeamsInitializer'; // Temporarily disabled
 import { ChefAuthProvider } from '~/components/chat/ChefAuthWrapper';
 import type { MetaFunction } from '@vercel/remix';
 import { ArrowLeftIcon } from '@radix-ui/react-icons';
@@ -14,7 +14,7 @@ export const meta: MetaFunction = () => {
 };
 
 export default function PromptDebug() {
-  useTeamsInitializer();
+  // useTeamsInitializer(); // Temporarily disabled
 
   return (
     <ChefAuthProvider redirectIfUnauthenticated={true}>

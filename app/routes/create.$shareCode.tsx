@@ -8,7 +8,7 @@ import { toast } from 'sonner';
 import { Toaster } from '~/components/ui/Toaster';
 import { setSelectedTeamSlug, useSelectedTeamSlug, waitForSelectedTeamSlug } from '~/lib/stores/convexTeams';
 import { TeamSelector } from '~/components/convex/TeamSelector';
-import { useTeamsInitializer } from '~/lib/stores/startup/useTeamsInitializer';
+// import { useTeamsInitializer } from '~/lib/stores/startup/useTeamsInitializer'; // Temporarily disabled
 import { ChefAuthProvider, useChefAuth } from '~/components/chat/ChefAuthWrapper';
 import { useParams } from '@remix-run/react';
 import { Loading } from '~/components/Loading';
@@ -60,7 +60,7 @@ function ShareProjectContent() {
     throw new Error('shareCode is required');
   }
 
-  useTeamsInitializer();
+  // useTeamsInitializer(); // Temporarily disabled
   const chefAuthState = useChefAuth();
 
   const cloneChat = useMutation(api.share.clone);
